@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelling Game for Kids</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .button-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  button {
+    padding: 20px;
+    font-size: 2em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+  .feedback {
+    height: 100px;
+    width: 100px;
+    position: absolute;
+    top: 20%;
+  }
+  #score {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -10%);
+    font-size: 48px; /* Adjust the size as needed */
+    color: #333; /* Adjust the color as needed */
+    z-index: 10; /* Ensure it's above other elements */
+  }
+  .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<div id="score">Score: 0</div>
+
+
+<div class="content">
+    <div class="button-container" id="button-container">
+      <!-- Buttons will be populated here -->
+    </div>
+    <div id="sentence" style="margin-top: 20px; font-size: 24px; text-align: center;"></div>
+</div>
+
+<img src="" id="feedback" class="feedback" style="display:none;"/>
+
+<script>
+
+  // Path to images
+  const checkMark = 'check.png';
+  const redCross = 'wrong.png';
+  
+  // Placeholder for words data, to be populated with actual data
+
+const words = [
+{'correct': 'Chair', 'sentence':'A piece of furniture designed for sitting on.', 'incorrect': ['Char', 'Cheir', 'Chare']},
+{'correct': 'Pond', 'sentence':'A small body of still water, typically shallow enough for sunlight to reach the bottom.', 'incorrect': ['Pnd', 'Ponde', 'Pand']},
+{'correct': 'Whale', 'sentence':'A large marine mammal that breathes air through blowholes.', 'incorrect': ['Whal', 'Whael', 'Whaele']},
+{'correct': 'First', 'sentence':'Coming before all others in time or order; earliest; 1st.', 'incorrect': ['Firste', 'Firset', 'Frist']},
+{'correct': 'Farm', 'sentence':'An area of land and its buildings used for growing crops and rearing animals.', 'incorrect': ['Farme', 'Far', 'Firm']},
+{'correct': 'Deer', 'sentence':'A hoofed grazing or browsing animal, with branched bony antlers that are shed annually.', 'incorrect': ['Dear', 'Dee', 'Deere']},
+{'correct': 'Cheer', 'sentence':'Shouts of joy, praise, or encouragement.', 'incorrect': ['Che', 'Chear', 'Cheere']},
+{'correct': 'Cart', 'sentence':'A vehicle with two or four wheels, typically pulled by a horse, used for transporting goods.', 'incorrect': ['Carte', 'Car', 'Cert']},
+{'correct': 'Card', 'sentence':'A piece of thick, stiff paper or thin pasteboard, typically rectangular.', 'incorrect': ['Carde', 'Car', 'Cord']},
+{'correct': 'Car', 'sentence':'A road vehicle, typically with four wheels, powered by an internal combustion engine.', 'incorrect': ['Care', 'Cr', 'Cur']},
+{'correct': 'Bird', 'sentence':'An animal with feathers, wings and a beak', 'incorrect': ['Brid', 'Birde', 'Burd']},
+{'correct': 'Vest', 'sentence':'A sleeveless garment worn over a shirt, typically having buttons down the front.', 'incorrect': ['Vet', 'Veste', 'Vust']},
+{'correct': 'Tent', 'sentence':'A portable shelter made of cloth, supported by one or more poles and stretched tight by cords or loops attached to pegs driven into the ground.', 'incorrect': ['Tnt', 'Tente', 'Tant']},
+{'correct': 'Shelf', 'sentence':'A flat, horizontal board or surface used for storing or displaying items.', 'incorrect': ['Shelve', 'Shlf', 'Sholf']},
+{'correct': 'Raft', 'sentence':'A flat buoyant structure, typically made of wood or other materials, used as a boat or floating platform.', 'incorrect': ['Rafte', 'Roft', 'Ruft']},
+{'correct': 'Plant', 'sentence':'A living organism of the kind exemplified by trees, shrubs, herbs, grasses, ferns, and mosses.', 'incorrect': ['Plane', 'Plante', 'Plint']},
+{'correct': 'Nest', 'sentence':'A structure built by birds or other animals to house eggs and provide a safe environment for raising offspring.', 'incorrect': ['Neste', 'Net', 'Nost']},
+{'correct': 'Mask', 'sentence':'A covering for all or part of the face, typically worn for protection, concealment, or decoration.', 'incorrect': ['Msk', 'Maske', 'Musk']},
+{'correct': 'Left', 'sentence':'The opposite of right; situated on the side of the body opposite to that on which the heart is, or on the side of the body that is positioned to the west when facing north.', 'incorrect': ['Lefte', 'Lft', 'Lift']},
+{'correct': 'Jump', 'sentence':'To push oneself off a surface and into the air using the legs and feet.', 'incorrect': ['Jmp', 'Jumpe', 'Jemp']},
+{'correct': 'Desk', 'sentence':'A piece of furniture with a flat or sloped surface used for writing, reading, or working.', 'incorrect': ['Deske', 'Dsk', 'Dosk']},
+{'correct': 'Cast', 'sentence':'To throw something forcefully in a specified direction.', 'incorrect': ['Caste', 'Cst', 'Cust']},
+{'correct': 'Camp', 'sentence':'A place with temporary accommodations such as tents or cabins, typically used by travelers or vacationers.', 'incorrect': ['Cmp', 'Campe', 'Comp']},
+{'correct': 'Band', 'sentence':'A flat, thin strip or loop of material put around something typically to hold it together or to encircle and decorate it.', 'incorrect': ['Bande', 'Bnd', 'Bend']},
+{'correct': 'Trap', 'sentence':'A device or enclosure designed to catch and retain animals, typically by allowing entry but preventing escape.', 'incorrect': ['Trape', 'Trp', 'Trip']},
+{'correct': 'Stripe', 'sentence':'A long, narrow band or strip, typically of a different color from the surrounding area.', 'incorrect': ['Strip', 'Strpe', 'Strape']},
+{'correct': 'Stop', 'sentence':'To bring to an end; to cease movement or operation.', 'incorrect': ['Stope', 'Stp', 'Stup']},
+{'correct': 'Smile', 'sentence':'A pleased, kind, or amused facial expression, typically with the corners of the mouth turned up and the front teeth exposed.', 'incorrect': ['Smiel', 'Smle', 'Smili']},
+{'correct': 'Slide', 'sentence':'To move smoothly along a surface while maintaining continuous contact.', 'incorrect': ['Slie', 'Slida', 'Slede']},
+{'correct': 'Sled', 'sentence':'A vehicle typically on runners, for conveying goods or passengers over snow, ice, rough ground, etc., especially one with a boxlike body and runners.', 'incorrect': ['Slede', 'Sld', 'Slad']},
+{'correct': 'Grape', 'sentence':'A berry, typically green (white grapes) or purple (black grapes), growing in clusters on a grapevine, eaten as fruit, and used in making wine.', 'incorrect': ['Grap', 'Grapa', 'Grepe']},
+{'correct': 'Frog', 'sentence':'A small tailless amphibian with a moist, smooth skin, typically leaping ability.', 'incorrect': ['Froge', 'Fr', 'Freg']},
+{'correct': 'Flip', 'sentence':'To throw or toss with a quick motion, usually flipping over.', 'incorrect': ['Flp', 'Flipe', 'Flop']},
+{'correct': 'Drip', 'sentence':'To fall or let fall in drops.', 'incorrect': ['Dripe', 'Drp', 'Drup']},
+{'correct': 'Drill', 'sentence':'A tool or machine with a rotating cutting tip or reciprocating hammer or chisel, used for making holes.', 'incorrect': ['Dril', 'Drille', 'Drull']},
+{'correct': 'Crab', 'sentence':'A crustacean with a broad carapace, stalked eyes, and five pairs of legs, the first pair of which are modified as pincers.', 'incorrect': ['Crabe', 'Crb', 'Crob']},
+{'correct': 'Clam', 'sentence':'A marine bivalve mollusk with shells of equal size.', 'incorrect': ['Clame', 'Clm', 'Clem']},
+{'correct': 'Watch', 'sentence':'A small timepiece worn typically on a strap around the wrist or carried in a pocket.', 'incorrect': ['Wach', 'Watche', 'Witch']},
+{'correct': 'Trash', 'sentence':'Discarded matter; refuse.', 'incorrect': ['Trashe', 'Trsh', 'Trush']},
+{'correct': 'Stick', 'sentence':'A thin piece of wood that has fallen or been cut from a tree.', 'incorrect': ['Stic', 'Stack', 'Steck']},
+{'correct': 'Path', 'sentence':'A way or track laid down for walking or made by continual treading.', 'incorrect': ['Pat', 'Pathe', 'Puth']},
+{'correct': 'Math', 'sentence':'The abstract science of number, quantity, and space.', 'incorrect': ['Mathe', 'Mat', 'Mith']},
+{'correct': 'Inch', 'sentence':'A unit of linear measure equal to one twelfth of a foot.', 'incorrect': ['Inche', 'anch', 'unch']},
+{'correct': 'Fish', 'sentence':'An animal that swims in the water', 'incorrect': ['Fishe', 'Fsh', 'Fash']},
+{'correct': 'Dock', 'sentence':'A structure extending alongshore or out from the shore into a body of water, to which boats may be moored.', 'incorrect': ['Doc', 'Dack', 'Dick']},
+{'correct': 'Crack', 'sentence':'A narrow space between two surfaces that have cracked or been cracked.', 'incorrect': ['Crake', 'Crak', 'Cracke']},
+{'correct': 'Clock', 'sentence':'A mechanical or electrical device for measuring time, indicating hours, minutes, and sometimes seconds.', 'incorrect': ['Cloc', 'Clok', 'Cloke']},
+{'correct': 'Brush', 'sentence':'An implement with a handle and a block of bristles, hair, or wire, used especially for cleaning, applying paint, or arranging hair.', 'incorrect': ['Brsh', 'Brushe', 'Brish']},
+{'correct': 'Branch', 'sentence':'A part of a tree that grows out from the trunk or from a bough.', 'incorrect': ['Brnch', 'Branche', 'Bronch']},
+{'correct': 'Bath', 'sentence':'A large container for water, used for immersing and washing the body.', 'incorrect': ['Bat', 'Bathe', 'Beth']},
+{'correct': 'White', 'sentence':'Of the color of milk or fresh snow, due to the reflection of all visible rays of light; the opposite of black.', 'incorrect': ['Whiet', 'Whit', 'Whitee']},
+{'correct': 'Thin', 'sentence':'Having opposite characteristics to thick or broad; having a small distance between two sides or surfaces.', 'incorrect': ['Thine', 'Then', 'Thon']},
+{'correct': 'Thick', 'sentence':'Having opposite characteristics to thin; with a large distance between two sides or surfaces.', 'incorrect': ['Thic', 'Thicke', 'Thik']},
+{'correct': 'Ship', 'sentence':'A large boat for transporting people or goods by sea.', 'incorrect': ['Shipe', 'Shop', 'Shup']},
+{'correct': 'Shell', 'sentence':'The hard outer covering of an animal, insect, or plant, especially one found on the beach.', 'incorrect': ['Shll', 'Shelle', 'Shall']},
+{'correct': 'Shave', 'sentence':'To remove hair from ones body, typically using a razor.', 'incorrect': ['Shae', 'Shive', 'Shava']},
+{'correct': 'Shapes', 'sentence':'The external form or appearance of someone or something.', 'incorrect': ['Shaps', 'Shapus', 'Shapos']},
+{'correct': 'Shake', 'sentence':'To move rapidly up and down or to and fro.', 'incorrect': ['Shae', 'Shakee', 'Sheke']},
+{'correct': 'Chop', 'sentence':'To cut something into smaller pieces with repeated sharp blows using an axe or knife.', 'incorrect': ['Cho', 'Chope', 'Chip']},
+{'correct': 'Chip', 'sentence':'A small piece of something removed in the course of chopping, cutting, or breaking a hard material such as wood or stone.', 'incorrect': ['Chipe', 'Chop', 'Chap']},
+{'correct': 'Chin', 'sentence':'The protruding part of the face below the mouth, formed by the apex of the lower jaw.', 'incorrect': ['Chn', 'Chine', 'Chan']},
+{'correct': 'Chick', 'sentence':'A baby bird, especially a young chicken.', 'incorrect': ['Chicke', 'Chik', 'Chic']},
+{'correct': 'Cherry', 'sentence':'A small, round stone fruit that is typically bright or dark red.', 'incorrect': ['Cher', 'Chery', 'Charry']}
+];
+
+ // Function to shuffle array (Fisher-Yates shuffle)
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // Function to choose a new word and display options
+function newWord() {
+  // Choose a random word
+  const wordIndex = Math.floor(Math.random() * words.length);
+  const wordData = words[wordIndex];
+
+  // Display the sentence
+  document.getElementById('sentence').textContent = wordData.sentence;
+
+  // Mix up the order of the spellings
+  let options = [wordData.correct, ...wordData.incorrect];
+  shuffle(options);
+
+  // Display the buttons
+  const buttonContainer = document.getElementById('button-container');
+  buttonContainer.innerHTML = '';
+  options.forEach(option => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.onclick = () => checkAnswer(option, wordData.correct);
+    buttonContainer.appendChild(button);
+  });
+}
+	// Variable to store the score
+	  let score = 0;
+
+  // Function to update the score
+  function updateScore(isCorrect) {
+    if (isCorrect) {
+      score++;
+      document.getElementById('score').textContent = `Score: ${score}`;
+    }
+  }
+
+  // Function to check the answer, display feedback and load new word
+	function checkAnswer(selected, correct) {
+	  const feedbackImg = document.getElementById('feedback');
+	  feedbackImg.style.display = 'block';
+	  const isCorrect = selected === correct;
+	  updateScore(isCorrect); // Update the score based on the answer
+	  if (isCorrect) {
+		feedbackImg.src = checkMark;
+	  } else {
+		feedbackImg.src = redCross;
+	  }
+	  setTimeout(() => {
+		feedbackImg.style.display = 'none';
+		newWord();
+	  }, 1000);
+	}
+  // Start the game with a new word
+  newWord();
+</script>
+</body>
+</html>
